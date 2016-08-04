@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="format-detection" content="telephone=no">
+  <title>Table JS</title>
+  <link rel="stylesheet" href="all.css">
+</head>
+<body>
+  <div class="container">
+    <pre class="task-description">
+      1) Название: Реализовать редактируемую таблицу без использования библиотек
+
+      2) Краткое описание:
+      - Вид таблицы, которую необходимо реализовать можно увидеть тут https://app.moqups.com/mr.vadim.ivanov@gmail.com/Jyx1sd3HWL/view
+      - Таблица должна содержать три колонки с произвольным содержимым (желательно нумерованный список имен)
+      - В конце каждой строчки должен быть чекбокс. Если он отмечен, то при нажатии на кнопку Delete вся строчка удаляется
+      - По двойному клику на ячейках с данными появляется инпут для редактирования содержимого. Для подтверждения редакnирования можно добавить кнопку или менять содержимое при потере фокуса инпута
+      - В заголовке колонок таблицы должны быть стрелки, которые позволяют сортировать таблицу (a-z, 0-9)
+
+      3) Требования:
+      - Поддержка: ие9+, последний хром, опера, сафари, фаерфокс
+      - Библиотеки использовать запрещено, только чистый, нативный javascript
+      - Готовое задание должно быть оформлено ссылкой на github и ссылкой на хостинг, чтобы можно было увидеть приложение вживую
+      - Модульность, комментарии, ясное именование функций
+      - Использование спецификации ES5
+      - В качестве code styleguide используем этот свод правил https://github.com/airbnb/javascript (не обращаем внимание на то, что относится к ES6: let, const и т.д.)
+    </pre>
+    <table>
+      <thead>
+        <tr>
+          <th><button class="btn-sort">^</button> Number</th>
+          <th><button class="btn-sort">^</button> First Name</th>
+          <th><button class="btn-sort">^</button> Lat Name</th>
+          <th><button class="btn-sort">^</button> Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>Name1</td>
+          <td>Last Name1</td>
+          <td><input type="checkbox"></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Name2</td>
+          <td>Last Name2</td>
+          <td><input type="checkbox"></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Name3</td>
+          <td>Last Name3</td>
+          <td><input type="checkbox"></td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="btn-delete pull-right">Delete</button>
+  </div>
+  <script src="table.js"></script>
+</body>
+</html>

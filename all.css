@@ -1,0 +1,33 @@
+.container {
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 15px;
+  margin: 0 auto;
+}
+.task-description {
+  padding: 15px;
+  border: 2px solid black;
+  white-space: pre-line;
+}
+table {
+  font-size: 20px;
+  line-height: 24px;
+  margin: 0 auto;
+}
+td {
+  padding: 15px;
+}
+tbody tr:nth-child(odd) {background-color: #f3eded;}
+.btn-delete {
+  background-color: #d48282;
+  border-radius: 5px;
+  border: none;
+  font-weight: bold;
+  padding: 10px 20px;
+}
+[class^="btn"] {cursor: pointer;}
+.pull-left {float: left;}
+.pull-right {float: right;}
+.btn-sort {
+  font-weight: bold;
+}

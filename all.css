@@ -3,6 +3,9 @@
   max-width: 1200px;
   padding: 0 15px;
   margin: 0 auto;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 .task-description {
   padding: 15px;
@@ -28,6 +31,10 @@ tbody tr:nth-child(odd) {background-color: #f3eded;}
 [class^="btn"] {cursor: pointer;}
 .pull-left {float: left;}
 .pull-right {float: right;}
-.btn-sort {
-  font-weight: bold;
+.btn-sort {font-weight: bold;}
+.btn-sort.asc {
+  -webkit-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  transform: rotate(180deg);
 }

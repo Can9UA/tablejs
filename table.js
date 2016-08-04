@@ -70,6 +70,7 @@ table.addEventListener('click', function(event) {
   }
 });
 
+// ---------
 function getMarkedRows(parent) {
   var rows = Array.prototype.slice.call(parent.rows);
 
@@ -87,5 +88,39 @@ document.querySelector('[data-delete-btn]').addEventListener('click', function (
 
   for (var i = 0, length = removeArr.length; i < length; i++) {
     tbody.removeChild(removeArr[i]);
+  }
+});
+
+// ---------
+var input = document.createElement('input');
+input.setAttribute('type', 'text');
+input.className = 'cell-value';
+
+function changeCellValue(cell) {
+  input.value = cell.innerText;
+  input.style.width = getComputedStyle(cell).width;
+
+  cell.innerText = '';
+
+  cell.appendChild(input);
+  input.focus();
+  input.setSelectionRange(0, input.value.length);
+
+  var setValueAndClose = function () {
+    input.removeEventListener('blur', setValueAndClose);
+    // input.remove(); // ie 11 doesn't support
+    cell.removeChild(input);
+    cell.innerText = input.value;
+  };
+
+  input.addEventListener('blur', setValueAndClose);
+}
+
+tbody.addEventListener('dblclick', function(event) {
+  var target = event.target;
+
+  if (target.tagName === 'TD' && !target.querySelector('input[data-delete]')) {
+
+    changeCellValue(target);
   }
 });

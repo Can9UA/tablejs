@@ -17,6 +17,9 @@ table {
   line-height: 24px;
   margin: 0 auto;
 }
+th {
+  width: 200px;
+}
 td {
   padding: 15px;
 }
@@ -37,4 +40,18 @@ tbody tr:nth-child(odd) {background-color: #f3eded;}
   -ms-transform: rotate(180deg);
   -o-transform: rotate(180deg);
   transform: rotate(180deg);
+}
+input.cell-value {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+input.cell-value,
+td {
+  font-size: 20px;
+  line-height: 24px;
+  font-family: 'Times New Roman';
 }

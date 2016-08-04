@@ -3,15 +3,15 @@
 var table = document.querySelector('table'),
     tbody = table.querySelector('tbody');
 
-function getClosestTag(el, tagSelector) {
+function getClosestTag(elem, tagSelector) {
   tagSelector = tagSelector.toUpperCase();
 
-  while (el.tagName !== tagSelector) {
-    el = el.parentNode;
-    if (!el) {return null;}
+  while (elem.tagName !== tagSelector) {
+    elem = elem.parentNode;
+    if (!elem) {return null;}
   }
 
-  return el;
+  return elem;
 }
 
 function sortTable(colIndex, direction) {
@@ -67,5 +67,25 @@ table.addEventListener('click', function(event) {
       getClosestTag(target, 'th').cellIndex,
       getSortDirection(target)
     );
+  }
+});
+
+function getMarkedRows(parent) {
+  var rows = Array.prototype.slice.call(parent.rows);
+
+  return rows.filter(function(row) {
+    var deleteBtn = row.querySelector('input[data-delete]');
+
+    return deleteBtn && deleteBtn.checked;
+  });
+}
+
+document.querySelector('[data-delete-btn]').addEventListener('click', function (event) {
+  var removeArr = getMarkedRows(tbody);
+
+  event.preventDefault();
+
+  for (var i = 0, length = removeArr.length; i < length; i++) {
+    tbody.removeChild(removeArr[i]);
   }
 });

@@ -22,10 +22,10 @@ var smartTable = {
   bindEvents: function () {
     var self = this;
 
-    this.table.addEventListener('click', function(event) {
+    // sort table
+    this.table.addEventListener('click', function (event) {
       var target = event.target;
 
-      // sort
       if (target.hasAttribute(self.config.sortBtn)) {
         self.sortTable(
           self.getClosestTag(target, 'th').cellIndex,
@@ -34,15 +34,7 @@ var smartTable = {
       }
     });
 
-    this.tbody.addEventListener('dblclick', function(event) {
-      var target = event.target;
-
-      if (target.tagName === 'TD' && !target.querySelector(self.config.deleteBtn)) {
-
-        self.changeCellValue(target);
-      }
-    });
-
+    // delete marked rows
     if (self.deleteBtn) {
       self.deleteBtn.addEventListener('click', function (event) {
         var removeArr = self.getMarkedRows(self.tbody);
@@ -54,6 +46,16 @@ var smartTable = {
         }
       });
     }
+
+    // change cell value
+    this.tbody.addEventListener('dblclick', function (event) {
+      var target = event.target;
+
+      if (target.tagName === 'TD' && !target.querySelector(self.config.deleteBtn)) {
+
+        self.changeCellValue(target);
+      }
+    });
   },
   sortTable: function (colIndex, direction) {
     var rowsArray = Array.prototype.slice.call(this.tbody.rows);
@@ -83,12 +85,12 @@ var smartTable = {
     return elem;
   },
   getSortDirection: function (elem) {
-    // 1 - asc
-    // -1 - desc
+    // 1 - ascending
+    // -1 - descending
     var direction = 1;
 
     if (elem.getAttribute('data-direction')) {
-     direction = elem.getAttribute('data-direction') * -1;
+      direction = elem.getAttribute('data-direction') * -1;
     }
 
     elem.setAttribute('data-direction', direction);
@@ -115,6 +117,7 @@ var smartTable = {
     });
   },
   createAuxiliaryElements: function () {
+    // create input tag for changing value in cell
     this.input = document.createElement('input');
     this.input.setAttribute('type', 'text');
     this.input.className = 'cell-value';

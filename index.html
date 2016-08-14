@@ -27,12 +27,14 @@
       - Использование спецификации ES5
       - В качестве code styleguide используем этот свод правил https://github.com/airbnb/javascript (не обращаем внимание на то, что относится к ES6: let, const и т.д.)
     </pre>
+    <label for="filter">Filter first name</label>
+    <input id="filter" type="text" data-filter-value>
     <table>
       <thead>
         <tr>
           <th><button class="btn-sort" data-sort-btn>^</button> Number</th>
-          <th><button class="btn-sort" data-sort-btn>^</button> First Name</th>
-          <th><button class="btn-sort" data-sort-btn>^</button> Lat Name</th>
+          <th data-filter-column><button class="btn-sort" data-sort-btn>^</button> First Name</th>
+          <th><button class="btn-sort" data-sort-btn>^</button> Last Name</th>
           <th>Options</th>
         </tr>
       </thead>
@@ -62,13 +64,13 @@
           <td><input type="checkbox" data-delete></td>
         </tr>
         <tr>
-          <td>4</td>
+          <td>5</td>
           <td>A</td>
           <td>Last Name3</td>
           <td><input type="checkbox" data-delete></td>
         </tr>
         <tr>
-          <td>4</td>
+          <td>6</td>
           <td>A</td>
           <td>Last Name3</td>
           <td><input type="checkbox" data-delete></td>

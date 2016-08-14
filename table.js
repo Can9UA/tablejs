@@ -15,7 +15,17 @@ var smartTable = {
     if (!this.table) {return false;}
 
     this.tbody = this.table.querySelector('tbody');
+    this.rows = Array.prototype.slice.call(this.tbody.rows);
     this.deleteBtn = document.querySelector(this.config.rowDeleteBtn);
+
+    // filter
+    var filterConfig = this.config.filter;
+    if (typeof filterConfig === 'object') {
+      this.filter = {};
+      this.filter.input = document.querySelector(filterConfig.input);
+      this.filter.column = document.querySelector(filterConfig.column);
+      this.filter.startAfter = filterConfig.startAfter || 1;
+    }
 
     return true;
   },
@@ -35,7 +45,7 @@ var smartTable = {
     });
 
     // delete marked rows
-    if (self.deleteBtn) {
+    if (this.deleteBtn) {
       self.deleteBtn.addEventListener('click', function (event) {
         var removeArr = self.getMarkedRows(self.tbody);
 
@@ -43,6 +53,7 @@ var smartTable = {
 
         for (var i = 0, length = removeArr.length; i < length; i++) {
           self.tbody.removeChild(removeArr[i]);
+          self.rows.splice(self.rows.indexOf(removeArr[i]), 1);
         }
       });
     }
@@ -56,11 +67,71 @@ var smartTable = {
         self.changeCellValue(target);
       }
     });
+
+    // filter
+    if (typeof this.filter === 'object') {
+      this.filter.input.addEventListener('keyup', function () {
+        var value = this.value;
+
+        if (value.length >= self.filter.startAfter) {
+          self.filterActive = true;
+          self.filterTable(self.filter.column, value);
+        } else if (value.length === 0) {
+          self.filterActive = false;
+          self.resetTable();
+        }
+      });
+    }
+  },
+  resetTable: function () {
+    this.table.removeChild(this.tbody);
+
+    for (var i = 0, length = this.rows.length; i < length; i++) {
+      this.tbody.appendChild(this.rows[i]);
+    }
+
+    this.table.appendChild(this.tbody);
+  },
+  searchRowsByFilter: function (colIndex, value) {
+    var suitableRows = [];
+    var row;
+    var cellValue;
+    var regExp = new RegExp(value, 'ig');
+
+    for (var i = 0, length = this.rows.length; i < length; i++) {
+      row = this.rows[i];
+      cellValue = row.cells[colIndex].innerHTML;
+
+      if (cellValue.match(regExp)) {
+        suitableRows.push(row);
+      }
+    }
+
+    return suitableRows;
+  },
+  filterTable: function (colIndex, value) {
+    var filterdRows;
+
+    colIndex = (typeof colIndex === 'number') ? colIndex : colIndex.cellIndex;
+
+    this.table.removeChild(this.tbody);
+
+    filterdRows = this.searchRowsByFilter(colIndex, value);
+
+    for (var i = 0, rowsLength = this.rows.length; i < rowsLength; i++) {
+      this.tbody.removeChild(this.rows[i]);
+    }
+
+    for (var j = 0, length = filterdRows.length; j < length; j++) {
+      this.tbody.appendChild(filterdRows[j]);
+    }
+
+    this.table.appendChild(this.tbody);
   },
   sortTable: function (colIndex, direction) {
-    var rowsArray = Array.prototype.slice.call(this.tbody.rows);
+    var rows = (this.filterActive) ? Array.prototype.slice.call(this.tbody.rows) : this.rows;
 
-    rowsArray.sort(function(a, b) {
+    rows.sort(function(a, b) {
       var val = a.cells[colIndex].innerHTML >= b.cells[colIndex].innerHTML ? 1 : -1;
 
       return val * direction;
@@ -68,8 +139,8 @@ var smartTable = {
 
     this.table.removeChild(this.tbody);
 
-    for (var i = 0, length = rowsArray.length; i < length; i++) {
-      this.tbody.appendChild(rowsArray[i]);
+    for (var i = 0, length = rows.length; i < length; i++) {
+      this.tbody.appendChild(rows[i]);
     }
 
     this.table.appendChild(this.tbody);
@@ -107,10 +178,8 @@ var smartTable = {
       elem.classList.remove('asc');
     }
   },
-  getMarkedRows: function (parent) {
-    var rows = Array.prototype.slice.call(parent.rows);
-
-    return rows.filter(function(row) {
+  getMarkedRows: function () {
+    return this.rows.filter(function(row) {
       var deleteBtn = row.querySelector('input[data-delete]');
 
       return deleteBtn && deleteBtn.checked;
@@ -150,5 +219,10 @@ smartTable.init({
   table: 'table',
   sortBtn: 'data-sort-btn',
   deleteBtn: 'input[data-delete]',
-  rowDeleteBtn: '[data-delete-btn]'
+  rowDeleteBtn: '[data-delete-btn]',
+  filter: {
+    input: '[data-filter-value]',
+    column: '[data-filter-column]',
+    startAfter: 0
+  }
 });

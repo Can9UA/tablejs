@@ -118,8 +118,9 @@ var smartTable = {
 
     filterdRows = this.searchRowsByFilter(colIndex, value);
 
-    for (var i = 0, rowsLength = this.rows.length; i < rowsLength; i++) {
-      this.tbody.removeChild(this.rows[i]);
+    // clear tbody
+    while (this.tbody.firstChild) {
+      this.tbody.removeChild(this.tbody.firstChild);
     }
 
     for (var j = 0, length = filterdRows.length; j < length; j++) {

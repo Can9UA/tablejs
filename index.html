@@ -26,15 +26,15 @@
       - Модульность, комментарии, ясное именование функций
       - Использование спецификации ES5
       - В качестве code styleguide используем этот свод правил https://github.com/airbnb/javascript (не обращаем внимание на то, что относится к ES6: let, const и т.д.)
+
+      Бонусные требования: реализовать фильтр.
     </pre>
-    <label for="filter">Filter first name</label>
-    <input id="filter" type="text" data-filter-value>
     <table>
       <thead>
         <tr>
-          <th><button class="btn-sort" data-sort-btn>^</button> Number</th>
-          <th data-filter-column><button class="btn-sort" data-sort-btn>^</button> First Name</th>
-          <th><button class="btn-sort" data-sort-btn>^</button> Last Name</th>
+          <th><button class="btn-sort" data-sort-btn>^</button> Number <input id="number" type="text" data-filter-value="0"></th>
+          <th><button class="btn-sort" data-sort-btn>^</button> First Name <input id="first-name" type="text" data-filter-value="1"></th>
+          <th><button class="btn-sort" data-sort-btn>^</button> Last Name <input id="last-name" type="text" data-filter-value="2"></th>
           <th>Options</th>
         </tr>
       </thead>

@@ -22,8 +22,7 @@ var smartTable = {
     var filterConfig = this.config.filter;
     if (typeof filterConfig === 'object') {
       this.filter = {};
-      this.filter.input = document.querySelector(filterConfig.input);
-      this.filter.column = document.querySelector(filterConfig.column);
+      this.filter.inputs = document.querySelectorAll(filterConfig.inputs);
       this.filter.startAfter = filterConfig.startAfter || 1;
     }
 
@@ -70,17 +69,22 @@ var smartTable = {
 
     // filter
     if (typeof this.filter === 'object') {
-      this.filter.input.addEventListener('keyup', function () {
+      var handler = function () {
         var value = this.value;
 
         if (value.length >= self.filter.startAfter) {
           self.filterActive = true;
-          self.filterTable(self.filter.column, value);
+          self.filterTable(this.getAttribute('data-filter-value'), value);
         } else if (value.length === 0) {
           self.filterActive = false;
           self.resetTable();
+          self.resetFilters();
         }
-      });
+      };
+
+      for (var i = 0, len = this.filter.inputs.length; i < len; i++) {
+        this.filter.inputs[i].addEventListener('keyup', handler);
+      }
     }
   },
   resetTable: function () {
@@ -91,6 +95,11 @@ var smartTable = {
     }
 
     this.table.appendChild(this.tbody);
+  },
+  resetFilters: function () {
+    for (var i = 0, len = this.filter.inputs.length; i < len; i++) {
+      this.filter.inputs[i].value= '';
+    }
   },
   searchRowsByFilter: function (colIndex, value) {
     var suitableRows = [];
@@ -111,8 +120,6 @@ var smartTable = {
   },
   filterTable: function (colIndex, value) {
     var filterdRows;
-
-    colIndex = (typeof colIndex === 'number') ? colIndex : colIndex.cellIndex;
 
     this.table.removeChild(this.tbody);
 
@@ -222,8 +229,7 @@ smartTable.init({
   deleteBtn: 'input[data-delete]',
   rowDeleteBtn: '[data-delete-btn]',
   filter: {
-    input: '[data-filter-value]',
-    column: '[data-filter-column]',
+    inputs: '[data-filter-value]',
     startAfter: 0
   }
 });

@@ -1,10 +1,12 @@
 'use strict';
 
+var tableData = [{number: 1, firstName: 'A', lastName: 'X'},{number: 2, firstName: 'B', lastName: 'Y'},{number: 3, firstName: 'C', lastName: 'Z'},{number: 4, firstName: 'D', lastName: 'Xx'},{number: 5, firstName: 'Aa', lastName: 'Xy'},{number: 6, firstName: 'Ab', lastName: 'Xz'},{number: 7, firstName: 'Ac', lastName: 'Zx'},{number: 8, firstName: 'Ba', lastName: 'Zy'},{number: 9, firstName: 'Bb', lastName: 'Zz'},{number: 10, firstName: 'Bc', lastName: 'Y'}];
+
 var smartTable = {
   init: function (config) {
     this.config = config;
 
-    if (this.findElemens()) {
+    if (this.findElemens() && this.fillInTable()) {
       this.bindEvents();
       this.createAuxiliaryElements();
     }
@@ -15,7 +17,6 @@ var smartTable = {
     if (!this.table) {return false;}
 
     this.tbody = this.table.querySelector('tbody');
-    this.rows = Array.prototype.slice.call(this.tbody.rows);
     this.deleteBtn = document.querySelector(this.config.rowDeleteBtn);
 
     // filter
@@ -200,8 +201,8 @@ var smartTable = {
     this.input.className = 'cell-value';
   },
   changeCellValue: function(cell) {
-    var self = this,
-        setValueAndClose;
+    var self = this;
+    var setValueAndClose;
 
     setValueAndClose = function () {
       self.input.removeEventListener('blur', setValueAndClose);
@@ -220,6 +221,47 @@ var smartTable = {
     self.input.setSelectionRange(0, self.input.value.length);
 
     self.input.addEventListener('blur', setValueAndClose);
+  },
+  getTableData: function () {
+    var data;
+    var row;
+    var cell;
+    var deleteBtn;
+
+    if (typeof this.config.getDataCallback === 'function') {
+      data = this.config.getDataCallback(this);
+    }
+
+    if (!data.length) {return false;}
+
+    this.rows = [];
+
+    for (var i = 0, len = data.length; i < len; i++) {
+      row = document.createElement('tr');
+
+      for (var prop in data[i]) {
+        cell = document.createElement('td');
+        cell.innerText = data[i][prop];
+        row.appendChild(cell);
+      }
+
+      deleteBtn = document.createElement('td');
+      deleteBtn.innerHTML = '<input type="checkbox" data-delete>';
+
+      row.appendChild(deleteBtn);
+      this.rows.push(row);
+    }
+
+    return this.rows;
+  },
+  fillInTable: function () {
+    if (!this.tbody || !this.getTableData().length) {return false;}
+
+    for (var i = 0, len = this.rows.length; i < len; i++) {
+      this.tbody.appendChild(this.rows[i]);
+    }
+
+    return true;
   }
 };
 
@@ -231,5 +273,9 @@ smartTable.init({
   filter: {
     inputs: '[data-filter-value]',
     startAfter: 0
+  },
+  getDataCallback: function (ui) {
+    console.log('table api: ', ui);
+    return tableData; // lorem data
   }
 });

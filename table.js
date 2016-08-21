@@ -139,12 +139,23 @@ var smartTable = {
   },
   sortTable: function (colIndex, direction) {
     var rows = (this.filterActive) ? Array.prototype.slice.call(this.tbody.rows) : this.rows;
+    var sortFunction;
 
-    rows.sort(function(a, b) {
-      var val = a.cells[colIndex].innerHTML >= b.cells[colIndex].innerHTML ? 1 : -1;
+    if (rows[0].cells[colIndex].innerHTML == +rows[0].cells[colIndex].innerHTML) {
+      sortFunction = function(a, b) {
+        var val = a.cells[colIndex].innerHTML - b.cells[colIndex].innerHTML;
 
-      return val * direction;
-    });
+        return val * direction;
+      };
+    } else {
+      sortFunction = function(a, b) {
+        var val = a.cells[colIndex].innerHTML > b.cells[colIndex].innerHTML ? 1 : -1;
+
+        return val * direction;
+      };
+    }
+
+    rows.sort(sortFunction);
 
     this.table.removeChild(this.tbody);
 

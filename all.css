@@ -7,6 +7,9 @@
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
+body {
+  min-height: 1755px;
+}
 .task-description {
   padding: 15px;
   border: 2px solid black;
@@ -18,13 +21,14 @@ table {
   margin: 0 auto;
 }
 th {
-  width: 200px;
+  width: 100px;
 }
 td {
   padding: 15px;
 }
 tbody tr:nth-child(odd) {background-color: #f3eded;}
-.btn-delete {
+.btn-delete,
+.btn-reset {
   background-color: #d48282;
   border-radius: 5px;
   border: none;
@@ -33,6 +37,11 @@ tbody tr:nth-child(odd) {background-color: #f3eded;}
   position: fixed;
   right: 20px;
   bottom: 40px;
+  color: white;
+}
+.btn-reset {
+  background-color: blue;
+  bottom: 80px;
 }
 [class^="btn"] {cursor: pointer;}
 .pull-left {float: left;}

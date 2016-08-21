@@ -85,7 +85,6 @@ var Table = function (config) {
     if (typeof filterConfig === 'object') {
       this.filter = {};
       this.filter.inputs = this.table.querySelectorAll(filterConfig.inputs);
-      this.filter.startAfter = filterConfig.startAfter || 1;
     }
 
     return true;
@@ -134,7 +133,7 @@ var Table = function (config) {
 
         for (var i = 0, length = removeArr.length; i < length; i++) {
           self.tbody.removeChild(removeArr[i]);
-          self.rows.splice(self.rows.indexOf(removeArr[i]), 1);
+          self.rows.splice(self.rows.indexOf(removeArr[i]), 1); // ‡
         }
       });
     }
@@ -152,20 +151,81 @@ var Table = function (config) {
     // filter
     if (typeof this.filter === 'object') {
       var handler = function () {
-        var value = this.value;
+        self.updateFiltersStates();
 
-        if (value.length >= self.filter.startAfter) {
-          self.filterActive = true;
-          self.filterTable(this.getAttribute('data-filter-value'), value);
-        } else if (value.length === 0) {
-          self.filterActive = false;
+        if (self.activeFilters.length) {
+          self.filterTable();
+        } else {
           self.resetTable();
-          self.resetFilters();
         }
       };
 
       for (var i = 0, len = this.filter.inputs.length; i < len; i++) {
         this.filter.inputs[i].addEventListener('keyup', handler);
+      }
+    }
+  };
+
+  this.searchRowsByFilter = function (colIndex, value, rows) {
+    var suitableRows = [];
+    var row;
+    var cellValue;
+    var regExp = new RegExp(value, 'ig');
+    rows = rows || Array.prototype.slice.call(this.tbody.rows);
+
+    for (var i = 0, length = rows.length; i < length; i++) {
+      row = rows[i];
+      cellValue = row.cells[colIndex].innerHTML;
+
+      if (cellValue.match(regExp)) {
+        suitableRows.push(row);
+      }
+    }
+
+    return suitableRows;
+  };
+
+  this.filterTable = function (colIndex, value) {
+    var filterdRows = this.rows;
+
+    this.table.removeChild(this.tbody);
+    // clear tbody var
+    while (this.tbody.firstChild) {
+      this.tbody.removeChild(this.tbody.firstChild);
+    }
+
+    if (colIndex && value) {
+      var newFilter = this.table.querySelector('[data-filter-value="' + colIndex + '"]');
+
+      if (newFilter) {
+        newFilter.value = value;
+        this.updateFiltersStates();
+      }
+    }
+
+    for (var i = 0, len = this.activeFilters.length; i < len; i++) {
+      var curFilter = this.activeFilters[i];
+
+      filterdRows = this.searchRowsByFilter(
+                      curFilter.getAttribute('data-filter-value'), // col index
+                      curFilter.value, // filter value
+                      filterdRows // current rows
+                    );
+    }
+
+    for (var j = 0, length = filterdRows.length; j < length; j++) {
+      this.tbody.appendChild(filterdRows[j]);
+    }
+
+    this.table.appendChild(this.tbody);
+  };
+
+  this.updateFiltersStates = function () {
+    this.activeFilters = [];
+
+    for (var i = 0, len = this.filter.inputs.length; i < len; i++) {
+      if (this.filter.inputs[i].value.length) {
+        this.activeFilters.push(this.filter.inputs[i]);
       }
     }
   };
@@ -185,54 +245,16 @@ var Table = function (config) {
     }
 
     this.table.appendChild(this.tbody);
-  };
 
-  this.resetFilters = function () {
-    for (var i = 0, len = this.filter.inputs.length; i < len; i++) {
-      this.filter.inputs[i].value= '';
+    // reset filters
+    for (var j = 0, len = this.filter.inputs.length; j < len; j++) {
+      this.filter.inputs[j].value= '';
     }
-  };
-
-  this.searchRowsByFilter = function (colIndex, value) {
-    var suitableRows = [];
-    var row;
-    var cellValue;
-    var regExp = new RegExp(value, 'ig');
-    var rows = (this.filterActive) ? Array.prototype.slice.call(this.tbody.rows) : this.rows;
-
-    for (var i = 0, length = rows.length; i < length; i++) {
-      row = rows[i];
-      cellValue = row.cells[colIndex].innerHTML;
-
-      if (cellValue.match(regExp)) {
-        suitableRows.push(row);
-      }
-    }
-
-    return suitableRows;
-  };
-
-  this.filterTable = function (colIndex, value) {
-    var filterdRows;
-
-    this.table.removeChild(this.tbody);
-
-    filterdRows = this.searchRowsByFilter(colIndex, value);
-
-    // clear tbody
-    while (this.tbody.firstChild) {
-      this.tbody.removeChild(this.tbody.firstChild);
-    }
-
-    for (var j = 0, length = filterdRows.length; j < length; j++) {
-      this.tbody.appendChild(filterdRows[j]);
-    }
-
-    this.table.appendChild(this.tbody);
+    this.updateFiltersStates();
   };
 
   this.sortTable = function (colIndex, direction) {
-    var rows = (this.filterActive) ? Array.prototype.slice.call(this.tbody.rows) : this.rows;
+    var rows = Array.prototype.slice.call(this.tbody.rows);
     var sortFunction;
 
     if (rows[0].cells[colIndex].innerHTML == +rows[0].cells[colIndex].innerHTML) {
@@ -295,14 +317,13 @@ var Table = function (config) {
   }
 };
 
-var table1 = new Table({
+window.table1 = new Table({
   table: '.table-1',
   sortBtn: 'data-sort-btn',
   deleteBtn: 'input[data-delete]',
   rowDeleteBtn: '[data-delete-btn]',
   filter: {
-    inputs: '[data-filter-value]',
-    startAfter: 0
+    inputs: '[data-filter-value]'
   },
   getDataCallback: function () {
     // first argument is api of table
@@ -310,19 +331,24 @@ var table1 = new Table({
   }
 });
 
-console.log('table 1 api: ', table1);
+console.log('table 1 api: ', window.table1);
 
-var table2 = new Table({
+window.table2 = new Table({
   table: '.table-2',
   sortBtn: 'data-sort-btn',
   deleteBtn: 'input[data-delete]',
   rowDeleteBtn: '[data-delete-btn]',
   filter: {
-    inputs: '[data-filter-value]',
-    startAfter: 0
+    inputs: '[data-filter-value]'
   },
   getDataCallback: function () {
     // first argument is api of table
     return tableData; // lorem data
   }
 });
+
+document.querySelector('[data-reset-btn]')
+        .addEventListener('click', function () {
+          window.table1.resetTable();
+          window.table2.resetTable();
+        });

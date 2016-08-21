@@ -2,16 +2,76 @@
 
 var tableData = [{number: 1, firstName: 'A', lastName: 'X'},{number: 2, firstName: 'B', lastName: 'Y'},{number: 3, firstName: 'C', lastName: 'Z'},{number: 4, firstName: 'D', lastName: 'Xx'},{number: 5, firstName: 'Aa', lastName: 'Xy'},{number: 6, firstName: 'Ab', lastName: 'Xz'},{number: 7, firstName: 'Ac', lastName: 'Zx'},{number: 8, firstName: 'Ba', lastName: 'Zy'},{number: 9, firstName: 'Bb', lastName: 'Zz'},{number: 10, firstName: 'Bc', lastName: 'Y'}];
 
-var smartTable = {
-  init: function (config) {
-    this.config = config;
+var Table = function (config) {
+  var self = this;
 
-    if (this.findElemens() && this.fillInTable()) {
-      this.bindEvents();
-      this.createAuxiliaryElements();
+  this.config = config;
+
+  function getClosestTag (elem, tagSelector) {
+    tagSelector = tagSelector.toUpperCase();
+
+    while (elem.tagName !== tagSelector) {
+      elem = elem.parentNode;
+      if (!elem) {return null;}
     }
-  },
-  findElemens: function () {
+
+    return elem;
+  }
+
+  function prepareData(data) {
+    var row;
+    var cell;
+    var deleteBtn;
+
+    if (!data.length) {return false;}
+
+    self.rows = [];
+
+    for (var i = 0, len = data.length; i < len; i++) {
+      row = document.createElement('tr');
+
+      for (var prop in data[i]) {
+        cell = document.createElement('td');
+        cell.innerText = data[i][prop];
+        row.appendChild(cell);
+      }
+
+      deleteBtn = document.createElement('td');
+      deleteBtn.innerHTML = '<input type="checkbox" data-delete>';
+
+      row.appendChild(deleteBtn);
+      self.rows.push(row);
+    }
+
+    return self.rows;
+  }
+
+  function setDirectionClass(elem, direction) {
+    if (direction === 1) {
+      elem.classList.add('asc');
+      elem.classList.remove('desc');
+    } else {
+      elem.classList.add('desc');
+      elem.classList.remove('asc');
+    }
+  }
+
+  function getSortDirection(elem) {
+    // 1 - ascending
+    // -1 - descending
+    var direction = 1;
+
+    if (elem.getAttribute('data-direction')) {
+      direction = elem.getAttribute('data-direction') * -1;
+    }
+
+    elem.setAttribute('data-direction', direction);
+    setDirectionClass(elem, direction);
+
+    return direction;
+  }
+
+  this.findElemens = function () {
     this.table = document.querySelector(this.config.table);
 
     if (!this.table) {return false;}
@@ -21,25 +81,46 @@ var smartTable = {
 
     // filter
     var filterConfig = this.config.filter;
+
     if (typeof filterConfig === 'object') {
       this.filter = {};
-      this.filter.inputs = document.querySelectorAll(filterConfig.inputs);
+      this.filter.inputs = this.table.querySelectorAll(filterConfig.inputs);
       this.filter.startAfter = filterConfig.startAfter || 1;
     }
 
     return true;
-  },
-  bindEvents: function () {
-    var self = this;
+  };
 
+  this.fillInTable = function (data) {
+    if (!this.tbody) {return false;}
+
+    if (data && data.length) {
+      data = prepareData(data);
+    } else if (typeof this.config.getDataCallback === 'function') {
+      data = prepareData(this.config.getDataCallback(this));
+    } else {
+      console.warn('No data for table!');
+      return false;
+    }
+
+    if (!data.length) {return false;}
+
+    for (var i = 0, len = data.length; i < len; i++) {
+      this.tbody.appendChild(data[i]);
+    }
+
+    return true;
+  };
+
+  this.bindEvents = function () {
     // sort table
     this.table.addEventListener('click', function (event) {
       var target = event.target;
 
       if (target.hasAttribute(self.config.sortBtn)) {
         self.sortTable(
-          self.getClosestTag(target, 'th').cellIndex,
-          self.getSortDirection(target)
+          getClosestTag(target, 'th').cellIndex,
+          getSortDirection(target)
         );
       }
     });
@@ -87,8 +168,16 @@ var smartTable = {
         this.filter.inputs[i].addEventListener('keyup', handler);
       }
     }
-  },
-  resetTable: function () {
+  };
+
+  this.createAuxiliaryElements = function () {
+    // create input tag for changing value in cell
+    this.input = document.createElement('input');
+    this.input.setAttribute('type', 'text');
+    this.input.className = 'cell-value';
+  };
+
+  this.resetTable = function () {
     this.table.removeChild(this.tbody);
 
     for (var i = 0, length = this.rows.length; i < length; i++) {
@@ -96,20 +185,23 @@ var smartTable = {
     }
 
     this.table.appendChild(this.tbody);
-  },
-  resetFilters: function () {
+  };
+
+  this.resetFilters = function () {
     for (var i = 0, len = this.filter.inputs.length; i < len; i++) {
       this.filter.inputs[i].value= '';
     }
-  },
-  searchRowsByFilter: function (colIndex, value) {
+  };
+
+  this.searchRowsByFilter = function (colIndex, value) {
     var suitableRows = [];
     var row;
     var cellValue;
     var regExp = new RegExp(value, 'ig');
+    var rows = (this.filterActive) ? Array.prototype.slice.call(this.tbody.rows) : this.rows;
 
-    for (var i = 0, length = this.rows.length; i < length; i++) {
-      row = this.rows[i];
+    for (var i = 0, length = rows.length; i < length; i++) {
+      row = rows[i];
       cellValue = row.cells[colIndex].innerHTML;
 
       if (cellValue.match(regExp)) {
@@ -118,8 +210,9 @@ var smartTable = {
     }
 
     return suitableRows;
-  },
-  filterTable: function (colIndex, value) {
+  };
+
+  this.filterTable = function (colIndex, value) {
     var filterdRows;
 
     this.table.removeChild(this.tbody);
@@ -136,8 +229,9 @@ var smartTable = {
     }
 
     this.table.appendChild(this.tbody);
-  },
-  sortTable: function (colIndex, direction) {
+  };
+
+  this.sortTable = function (colIndex, direction) {
     var rows = (this.filterActive) ? Array.prototype.slice.call(this.tbody.rows) : this.rows;
     var sortFunction;
 
@@ -164,60 +258,21 @@ var smartTable = {
     }
 
     this.table.appendChild(this.tbody);
-  },
-  getClosestTag: function (elem, tagSelector) {
-    tagSelector = tagSelector.toUpperCase();
+  };
 
-    while (elem.tagName !== tagSelector) {
-      elem = elem.parentNode;
-      if (!elem) {return null;}
-    }
-
-    return elem;
-  },
-  getSortDirection: function (elem) {
-    // 1 - ascending
-    // -1 - descending
-    var direction = 1;
-
-    if (elem.getAttribute('data-direction')) {
-      direction = elem.getAttribute('data-direction') * -1;
-    }
-
-    elem.setAttribute('data-direction', direction);
-    this.setDirectionClass(elem, direction);
-
-    return direction;
-  },
-  setDirectionClass: function (elem, direction) {
-    if (direction === 1) {
-      elem.classList.add('asc');
-      elem.classList.remove('desc');
-    } else {
-      elem.classList.add('desc');
-      elem.classList.remove('asc');
-    }
-  },
-  getMarkedRows: function () {
+  this.getMarkedRows = function () {
     return this.rows.filter(function(row) {
       var deleteBtn = row.querySelector('input[data-delete]');
 
       return deleteBtn && deleteBtn.checked;
     });
-  },
-  createAuxiliaryElements: function () {
-    // create input tag for changing value in cell
-    this.input = document.createElement('input');
-    this.input.setAttribute('type', 'text');
-    this.input.className = 'cell-value';
-  },
-  changeCellValue: function(cell) {
-    var self = this;
+  };
+
+  this.changeCellValue = function(cell) {
     var setValueAndClose;
 
     setValueAndClose = function () {
       self.input.removeEventListener('blur', setValueAndClose);
-      // self.input.remove(); // ie 11 doesn't support
       cell.removeChild(self.input);
       cell.innerText = self.input.value;
     };
@@ -232,52 +287,16 @@ var smartTable = {
     self.input.setSelectionRange(0, self.input.value.length);
 
     self.input.addEventListener('blur', setValueAndClose);
-  },
-  getTableData: function () {
-    var data;
-    var row;
-    var cell;
-    var deleteBtn;
+  };
 
-    if (typeof this.config.getDataCallback === 'function') {
-      data = this.config.getDataCallback(this);
-    }
-
-    if (!data.length) {return false;}
-
-    this.rows = [];
-
-    for (var i = 0, len = data.length; i < len; i++) {
-      row = document.createElement('tr');
-
-      for (var prop in data[i]) {
-        cell = document.createElement('td');
-        cell.innerText = data[i][prop];
-        row.appendChild(cell);
-      }
-
-      deleteBtn = document.createElement('td');
-      deleteBtn.innerHTML = '<input type="checkbox" data-delete>';
-
-      row.appendChild(deleteBtn);
-      this.rows.push(row);
-    }
-
-    return this.rows;
-  },
-  fillInTable: function () {
-    if (!this.tbody || !this.getTableData().length) {return false;}
-
-    for (var i = 0, len = this.rows.length; i < len; i++) {
-      this.tbody.appendChild(this.rows[i]);
-    }
-
-    return true;
+  if (this.findElemens() && this.fillInTable()) {
+    this.bindEvents();
+    this.createAuxiliaryElements();
   }
 };
 
-smartTable.init({
-  table: 'table',
+var table1 = new Table({
+  table: '.table-1',
   sortBtn: 'data-sort-btn',
   deleteBtn: 'input[data-delete]',
   rowDeleteBtn: '[data-delete-btn]',
@@ -285,8 +304,25 @@ smartTable.init({
     inputs: '[data-filter-value]',
     startAfter: 0
   },
-  getDataCallback: function (ui) {
-    console.log('table api: ', ui);
+  getDataCallback: function () {
+    // first argument is api of table
+    return tableData; // lorem data
+  }
+});
+
+console.log('table 1 api: ', table1);
+
+var table2 = new Table({
+  table: '.table-2',
+  sortBtn: 'data-sort-btn',
+  deleteBtn: 'input[data-delete]',
+  rowDeleteBtn: '[data-delete-btn]',
+  filter: {
+    inputs: '[data-filter-value]',
+    startAfter: 0
+  },
+  getDataCallback: function () {
+    // first argument is api of table
     return tableData; // lorem data
   }
 });
